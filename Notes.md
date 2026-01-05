@@ -1252,40 +1252,7 @@ let rec snoc_cons (#a: Type) (l: list a) (h: a) : Lemma (reverse (snoc l h) == h
     | hd :: tl -> snoc_cons tl h
 ```
 
-For the base case, we can show that both expressions converge when evaluated for `[]`:
-
-$$
-\begin{align*}
-&(a)    &\texttt{reverse (snoc l h)}    &= \texttt{reverse (snoc [] h)},            && \text{By plugging in [] for l} \\
-&       &                               &= \texttt{reverse (append [] [h])},        && \text{By definition of } \texttt{snoc} \\
-&       &                               &= \texttt{reverse [h]},                    && \text{By definition of } \texttt{append} \text{ (base case)} \\
-&       &                               &= \texttt{append (reverse []) [h]},        && \text{By definition of } \texttt{reverse} \text{ (recursive case)} \\
-&       &                               &= \texttt{append [] [h]},                  && \text{By definition of } \texttt{reverse} \text{ (base case)} \\
-&       &                               &= \texttt{[h]}                             && \text{By definition of } \texttt{append} \text{ (base case)} \\ \\
-&(b)    &\texttt{h :: reverse l}        &= \texttt{h :: reverse []},                && \text{By plugging in [] for l} \\
-&       &                               &= \texttt{h :: []},                        && \text{By definition of } \texttt{reverse} \text{ (base case)} \\
-&       &                               &= \texttt{[h]},                            && \text{By definition of the list constructor} \texttt{ :: } \text{(} \texttt{Cons} \text{)} \\
-\end{align*}
-$$
-
-So for the empty list, $\texttt{reverse (snoc l h) == h :: reverse l}$ does indeed hold. For the induction hypothesis, we'll try to prove that *if* for some $l := hd :: tl$, it is true that $\texttt{reverse (snoc tl h) == h :: reverse tl}$, it will also hold for $l$.
-
-$$
-\begin{align*}
-&(a)        &\texttt{reverse (snoc l h)}            &= \texttt{reverse (snoc (hd :: tl) h)},            && \text{By plugging in hd :: tl for l} \\
-&           &                                       &= \texttt{reverse (append (hd :: tl) [h])},        && \text{By definition of } \texttt{snoc} \\
-&           &                                       &= \texttt{reverse (hd :: (append tl [h]))},        && \text{By definition of } \texttt{append} \\
-&           &                                       &= \texttt{reverse (hd :: (snoc tl h))},            && \text{By definition of } \texttt{snoc} \\
-&           &                                       &= \texttt{append (reverse (snoc tl h)) [hd]},      && \text{By definition of } \texttt{reverse} \\
-&           &                                       &= \texttt{append (h :: reverse tl) [hd]},          && \text{Apply the induction hypothesis} \\
-&           &                                       &= \boxed{\texttt{h :: (append (reverse tl) [hd])}} && \text{By definition of } \texttt{append} \\ \\
-
-&(b)        &\texttt{h :: reverse l}                &= \texttt{h :: reverse (hd :: tl)},                && \text{By plugging in hd :: tl for l} \\
-&           &                                       &= \boxed{\texttt{h :: (append (reverse tl) [hd])}} && \text{By definition of } \texttt{reverse}
-\end{align*}
-$$
-
-By exploring various substitutions and rewritings, we conclude that for any arbitrary $l := hd :: tl$, both $\texttt{reverse (snoc l h)}$ and $\texttt{h :: reverse l}$ are equivalent to the expression $\texttt{h :: (append (reverse tl) [hd])}$. With the base case of `[]` being true, and with the equality holding for any list constructor `hd :: tl`, we can conclude that it holds for any list, whether empty or constructed as `hd :: tl`.
+See proof: [`snoc_cons`](Proofs.md#snoc_cons)
 
 With the `snoc_cons` lemma fully proved, it's now possible to show that `reverse` is an *involutive* function, i.e. a function that is its own inverse.
 Which is to say that applying `reverse` twice on an argument will yield the argument itself, like the *identity* function.
@@ -1299,20 +1266,7 @@ let rec reverse_involutive (#a: Type) (l: list a) : Lemma (reverse (reverse l) =
         snoc_cons (reverse tl) hd
 ```
 
-For the base case, reversing the empty list simply yields itself, so that checks out. For the inductive case, we start again with some `l := hd :: tl` and try to prove that if `reverse (reverse tl) == tl` is true, then `reverse (reverse l) == l` is also true. We also use the earlier lemma `snoc_cons` to help F\* with the proof.
-
-$$
-\begin{align*}
-&           &\texttt{reverse (reverse l)}       &= \texttt{reverse (reverse (hd :: tl))},           && \text{By plugging in hd :: tl for l} \\
-&           &                                   &= \texttt{reverse (append (reverse tl) [hd])},     && \text{By definition of } \texttt{reverse} \\
-&           &                                   &= \texttt{reverse (snoc (reverse tl) hd)},         && \text{By definition of } \texttt{snoc} \\
-&           &                                   &= \texttt{hd :: reverse (reverse tl)},             && \text{Apply the } \texttt{snoc\_{}cons} \text{ lemma} \\
-&           &                                   &= \texttt{hd :: tl}                                && \text{Apply the induction hypothesis} \\
-&           &                                   &= \texttt{l}                                       && \text{By definition of } \texttt{l}
-\end{align*}
-$$
-
-Once again, we've shown that `reverse (reverse l) == l` for both the empty list and for a general list of the form `hd :: tl`, therefore concluding the proof.
+See proof: [`reverse_involutive`](Proofs.md#reverse_involutive)
 
 #### 8.4.1. Exercises: Reverse is injective
 
@@ -1325,16 +1279,7 @@ let reverse_injective l1 l2 =
     reverse_involutive l2
 ```
 
-This time, the proof does not require induction, but it does tell F\* to use the `reverse_involutive` lemma for both lists to help it prove the lemma:
-
-$$
-\begin{align*}
-&           &\texttt{reverse l1}                &= \texttt{reverse l2},                 && \text{Precondition for the } \texttt{reverse\_{}injective} \text{ lemma} \\
-&\iff       &\texttt{reverse (reverse l1)}      &= \texttt{reverse (reverse l2)}        && \text{Since } \texttt{reverse} \text{ is a pure function, applying it to both sides should preserve equality} \\
-&\iff       &\texttt{l1}                        &= \texttt{reverse (reverse l2)}        && \text{Apply the } \texttt{reverse\_{}involutive} \text{ lemma to } \texttt{l1} \\
-&\iff       &\texttt{l1}                        &= \texttt{l2}                          && \text{Apply the } \texttt{reverse\_{}involutive} \text{ lemma to } \texttt{l2} \quad \square \\
-\end{align*}
-$$
+See proof: [`reverse_injective` (non-recursive version)](Proofs.md#reverse_injective)
 
 Alternatively, it's possible to prove first that `snoc` is injective, and then use a proof by induction to prove that `reverse` is injective as well:
 
@@ -1345,47 +1290,7 @@ let rec snoc_injective (#a: Type) (l1 l2: list a) (h1 h2: a) : Lemma (requires s
     | _ :: tl1, _ :: tl2 -> snoc_injective tl1 tl2 h1 h2
 ```
 
-To see how this works, we'll consider both paths of the pattern match. For the base case, both `l1` and `l2` are empty.
-
-$$
-\begin{align*}
-&(a)        &\texttt{snoc l1 h1}        &= \texttt{snoc [] h1},         && \text{By plugging in } \texttt{[]} \text{ for } \texttt{l1} \\
-&           &                           &= \texttt{append [] [h1]},     && \text{By definition of } \texttt{snoc} \\
-&           &                           &= \texttt{[h1]},               && \text{By definition of } \texttt{append} \text{ (base case)} \\ \\
-
-&(b)        &\texttt{snoc l2 h2}        &= \texttt{snoc [] h2},         && \text{By plugging in } \texttt{[]} \text{ for } \texttt{l2} \\
-&           &                           &= \texttt{append [] [h2]},     && \text{By definition of } \texttt{snoc} \\
-&           &                           &= \texttt{[h2]},               && \text{By definition of } \texttt{append} \text{ (base case)} \\ \\
-
-&(c)        &\texttt{snoc l1 h1}        &= \texttt{snoc l2 h2},         && \text{Precondition for the lemma} \\
-&\iff       &\texttt{[h1]}              &= \texttt{[h2]},               && \text{Use } (a) \text{ and } (b) \\
-&\iff       &\texttt{h1 :: []}          &= \texttt{h2 :: []},           && \text{By injectivity of } \texttt{::} \\
-&\iff       &\texttt{h1}                &= \texttt{h2},                 && \text{Since } \texttt{[]} \text{ is equal to itself}
-\end{align*}
-$$
-
-For the base case, we can leverage the precondition to show that `h1 == h2` holds.
-Since in the base case, `l1 = []` and `l2 = []`, they're equal by definition.
-Together, it means that `h1 == h2 /\ l1 == l2` holds.
-
-For the inductive case, we assume that for the tails `t1` and `t2` of the inputs `l1` and `l2` respectively, that if `snoc tl1 h1 == snoc tl2 h2` holds, then `h1 == h2 /\ tl1 == tl2` holds.
-Then, using that assumption, we must show that `h1 == h2 /\ l1 == l2` holds.
-
-$$
-\begin{align*}
-&           &\texttt{snoc l1 h1}                    &= \texttt{snoc l2 h2},                                                 && \text{Precondition for the lemma} \\
-&\iff       &\texttt{snoc (hd1 :: tl1) h1}          &= \texttt{snoc (hd2 :: tl2) h2},                                       && \text{Expand } \texttt{l1} \text{ and } \texttt{l2} \\
-&\iff       &\texttt{append (hd1 :: tl1) [h1]}      &= \texttt{append (hd2 :: tl2) [h2]}                                    && \text{By definition of } \texttt{snoc} \\
-&\iff       &\texttt{hd1 :: (append tl1 [h1])}      &= \texttt{hd2 :: (append tl2 [h2])}                                    && \text{By definition of } \texttt{append} \\
-&\iff       &\texttt{hd1 :: (snoc tl1 h1)}          &= \texttt{hd2 :: (snoc tl2 h2)},                                       && \text{By definition of } \texttt{snoc} \\
-&\iff       &\texttt{hd1} = \texttt{hd2}            &\land \texttt{snoc tl1 h1} = \texttt{snoc tl2 h2},                     && \text{By injectivity of } \texttt{::} \\
-&\implies   &\texttt{hd1} = \texttt{hd2}            &\land \texttt{h1} = \texttt{h2} \land \texttt{tl1} = \texttt{tl2},     && \text{Apply the induction hypothesis} \\
-&\iff       &\texttt{h1} = \texttt{h2}              &\land \texttt{hd1 :: tl1} = \texttt{hd2 :: tl2},                       && \text{By definition of } \texttt{::} \\
-&\iff       &\texttt{h1} = \texttt{h2}              &\land \texttt{l1} = \texttt{l2},                                       && \text{By definition of } \texttt{l1} \text{ and } \texttt{l2} \quad \square
-\end{align*}
-$$
-
-This shows that $\texttt{snoc l1 h1} = \texttt{snoc l2 h2} \implies \texttt{h1} = \texttt{h2} \land \texttt{l1} = \texttt{l2}$ for both the empty list and a general `hd :: tl` list, concluding the proof.
+See proof: [`snoc_injective`](Proofs.md#snoc_injective)
 
 Using this lemma, let's prove `reverse_injective` recursively:
 
@@ -1398,26 +1303,7 @@ let rec reverse_injective (#a: Type) (l1 l2: list a) : Lemma (requires reverse l
         reverse_injective tl1 tl2
 ```
 
-For the base case, where `l1 = []` and `l2 = []`, we can use the definition of `reverse` to see that they evaluate to be equal.
-For the inductive case, we formulate the induction hypothesis to be: assume for the tails `tl1` and `tl2` for the two respective input lists that if `reverse tl1 == reverse tl2` holds, it also holds that `tl1 == tl2`.
-Using the induction hypothesis and the `snoc_injective` lemma, we then try to prove that this holds for the input lists themselves.
-
-$$
-\begin{align*}
-&           &\texttt{reverse l1}                            &= \texttt{reverse l2},                         && \text{Precondition of the lemma} \\
-&\iff       &\texttt{reverse (hd1 :: tl1)}                  &= \texttt{reverse (hd2 :: tl2)},               && \text{Fill in the definitions of } \texttt{l1} \text{ and } \texttt{l2} \\
-&\iff       &\texttt{append (reverse tl1) [hd1]}            &= \texttt{append (reverse tl2) [hd2]},         && \text{By definition of } \texttt{reverse} \\
-&\iff       &\texttt{snoc (reverse tl1) hd1}                &= \texttt{snoc (reverse tl2) hd2},             && \text{By definition of } \texttt{snoc} \\
-&\iff       &\texttt{reverse tl1} = \texttt{reverse tl2}    &\land \texttt{hd1} = \texttt{hd2},             && \text{Apply the } \texttt{snoc\_{}injective} \text{ lemma} \\
-&\implies   &\texttt{tl1} = \texttt{tl2}                    &\land \texttt{hd1} = \texttt{hd2}              && \text{Apply the induction hypothesis} \\
-&\iff       &\texttt{hd1 :: tl1}                            &= \texttt{hd2 :: tl2},                         && \text{By definition of } \texttt{::} \\
-&\iff       &\texttt{l1}                                    &= \texttt{l2}                                  && \text{By definition of } \texttt{l1} \text{ and } \texttt{l2} \quad \square
-\end{align*}
-$$
-
-By doing the proof manually, it becomes clear why the F\* code needed to call `snoc_injective` on the *reverse* tails.
-With just one cleverly used lemma and the induction hypothesis, we've shown that $\texttt{reverse l1} = \texttt{reverse l2} \implies \texttt{l1} = \texttt{l2}$ for the inductive case.
-With both cases covered, we show that it holds for any list, whether empty or `hd :: tl`, concluding the proof.
+See proof: [`reverse_injective` (recursive version)](Proofs.md#reverse_injective-recursive-version)
 
 #### 8.4.2. Exercise: Optimizing reverse
 
