@@ -1323,7 +1323,25 @@ Prove the following lemma:
 val rev_reverse_equivalent (#a: Type) (l: list a) : Lemma (rev l == reverse l)
 ```
 
+See proof: [`rev_reverse_equivalent`](Proofs.md#rev_reverse_equivalent)
 
+#### 8.4.3. Exercise: Optimizing Fibonacci
+
+Given this tail-recursive variant of `fibonacci`:
+
+```fs
+let rec fib (a b n: nat) : Tot nat (decreases n) =
+    match n with
+    | 0 -> a
+    | _ -> fib b (a + b) (n - 1)
+let fib_tail (n: nat) : nat = fib 1 1 n
+```
+
+Prove the following lemma:
+
+```fs
+val fib_tail_is_ok (n: nat) : Lemma (fib_tail n == fibonacci n)
+```
 
 ---
 
