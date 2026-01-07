@@ -496,6 +496,11 @@ $$
 #### Function definitions
 
 ```fs
+let rec append (#a: Type) (l1 l2: list a) = 
+    match l1 with
+    | [] -> l2
+    | hd :: tl -> hd :: append tl l2
+
 let rec rev_aux (#a: Type) (acc: list a) (original: list a) : Tot (list a) (decreases original) =
     match original with
     | [] -> acc
@@ -504,7 +509,7 @@ let rec rev_aux (#a: Type) (acc: list a) (original: list a) : Tot (list a) (decr
 let rec reverse (#a: Type) (l: list) : list a =
     match l with
     | [] -> []
-    | hd :: tl -> append (reverse tl) hd
+    | hd :: tl -> append (reverse tl) [hd]
 ```
 
 #### F\* lemma
@@ -528,7 +533,35 @@ See also:
 
 ##### Base case: `original = []`
 
-TODO
+- given: $\texttt{original} = \texttt{[]}$
+
+$$
+\begin{align*}
+&           &\texttt{rev\_{}aux acc original}                   &= \texttt{rev\_{}aux acc []}               && \text{Base case} \tag{a} \\
+&           &                                                   &= \texttt{acc}                             && \text{By definition of } \texttt{rev\_{}aux} \text{ (base case)} \\ \\
+
+&           &\texttt{append (reverse original) acc}             &= \texttt{append (reverse []) acc}         && \text{Base case} \tag{b} \\
+&           &                                                   &= \texttt{append [] acc}                   && \text{By definition of } \texttt{reverse} \text{ (base case)} \\
+&           &                                                   &= \texttt{acc}                             && \text{By definition of } \texttt{append} \text{ (base case)}
+\end{align*}
+$$
+
+#### Inductive case: `original = hd :: tl`
+
+- given: $\texttt{original} = \texttt{hd :: tl}$
+- given: $\texttt{append (append l1 l2) l2} = \texttt{append l1 (append l2 l3)}$
+- assume: $\texttt{rev\_{}aux (hd :: acc) tl} = \texttt{append (reverse tl) (hd :: acc)}$
+
+$$
+\begin{align*}
+&       &\texttt{rev\_{}aux acc original}                   &= \texttt{rev\_{}aux acc (hd :: tl)}                   && \text{Inductive case} \\
+&       &                                                   &= \texttt{rev\_{}aux (hd :: acc) tl}                   && \text{By definition of } \texttt{rev\_{}aux} \text{ (recursive case)} \\
+&       &                                                   &= \texttt{append (reverse tl) (hd :: acc)}             && \text{Apply the induction hypothesis} \\
+&       &                                                   &= \texttt{append (reverse tl) (append [hd] acc)}       && \text{By definition of } \texttt{append} \\
+&       &                                                   &= \texttt{append (append (reverse tl) [hd]) acc}       && \text{Apply the } \texttt{append\_{}associative} \text{ lemma} \\
+&       &                                                   &= \texttt{append (reverse (hd :: tl)) acc}             && \text{By definition of } \texttt{reverse} \text{ (recursive case)} \quad \square \\
+\end{align*}
+$$
 
 ### `rev_reverse_equivalent`
 
@@ -554,7 +587,7 @@ let rev (#a: Type) (l: list a) : list a = rev_aux [] l
 #### F\* lemma
 
 ```fs
-let rec rev_reverse_equivalent (#a: Type) (l: list a) : Lemma (rev [] l == reverse l) =
+let rec rev_reverse_equivalent (#a: Type) (l: list a) : Lemma (rev l == reverse l) =
     rev_aux_appends_to_reverse [] l;
     append_empty (reverse l)
 ```
@@ -564,6 +597,15 @@ See also:
 - [`append_empty`](Proofs.md#append_empty)
 - [`rev_aux_appends_to_reverse`](Proofs.md#rev_aux_appends_to_reverse)
 
-#### Proof: by induction
+#### Proof
 
-TODO: after finishing `rev_aux_appends_to_reverse`
+- given: $\texttt{rev\_{}aux [] l} = \texttt{append (reverse l) []}$
+- given: $\texttt{append (reverse l) []} = \texttt{reverse l}$
+
+$$
+\begin{align*}
+&           &\texttt{rev l}             &= \texttt{rev\_{}aux [] l}             && \text{By definition of } \texttt{rev} \\
+&           &                           &= \texttt{append (reverse l [])}       && \text{Apply the } \texttt{rev\_{}aux\_{}appends\_{}to\_{}reverse} \text{ lemma} \\
+&           &                           &= \texttt{reverse l}                   && \text{Apply the } \texttt{append\_{}empty} \text{ lemma} \quad \square
+\end{align*}
+$$
