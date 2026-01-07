@@ -490,3 +490,80 @@ $$
 &\iff                       &\texttt{l1}                               &= \texttt{l2}                                   && \text{By definition of } \texttt{l1}, \texttt{l2} \quad \square
 \end{align*}
 $$
+
+### `rev_aux_appends_to_reverse`
+
+#### Function definitions
+
+```fs
+let rec rev_aux (#a: Type) (acc: list a) (original: list a) : Tot (list a) (decreases original) =
+    match original with
+    | [] -> acc
+    | hd :: tl -> rev_aux (hd :: acc) tl
+
+let rec reverse (#a: Type) (l: list) : list a =
+    match l with
+    | [] -> []
+    | hd :: tl -> append (reverse tl) hd
+```
+
+#### F\* lemma
+
+```fs
+let rec rev_aux_appends_to_reverse (#a: Type) (acc: list a) (original: list a)
+    : Lemma (ensures (rev_aux acc original == append (reverse original) acc))
+            (decreases original) =
+    match original with
+    | [] -> ()
+    | hd :: tl ->
+        rev_aux_appends_to_reverse (hd :: acc) tl;
+        append_associative (reverse tl) [hd] acc
+```
+
+See also:
+
+- [`append_associative`](Proofs.md#append_associative)
+
+#### Proof: by induction
+
+##### Base case: `original = []`
+
+TODO
+
+### `rev_reverse_equivalent`
+
+#### Function definitions
+
+```fs
+// Recursive function to reverse a list
+let rec reverse (#a: Type) (l: list) : list a =
+    match l with
+    | [] -> []
+    | hd :: tl -> append (reverse tl) hd
+
+// Tail-recursive helper function to reverse a list
+let rec rev_aux (#a: Type) (acc: list a) (original: list a) : Tot (list a) (decreases original) =
+    match original with
+    | [] -> acc
+    | hd :: tl -> rev_aux (hd :: acc) tl
+
+// Reverse with tail recursion
+let rev (#a: Type) (l: list a) : list a = rev_aux [] l
+```
+
+#### F\* lemma
+
+```fs
+let rec rev_reverse_equivalent (#a: Type) (l: list a) : Lemma (rev [] l == reverse l) =
+    rev_aux_appends_to_reverse [] l;
+    append_empty (reverse l)
+```
+
+See also:
+
+- [`append_empty`](Proofs.md#append_empty)
+- [`rev_aux_appends_to_reverse`](Proofs.md#rev_aux_appends_to_reverse)
+
+#### Proof: by induction
+
+TODO: after finishing `rev_aux_appends_to_reverse`
