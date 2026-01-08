@@ -1330,18 +1330,20 @@ See proof: [`rev_reverse_equivalent`](Proofs.md#rev_reverse_equivalent)
 Given this tail-recursive variant of `fibonacci`:
 
 ```fs
-let rec fib (a b n: nat) : Tot nat (decreases n) =
+let rec fib_aux (a b n: nat) : Tot nat (decreases n) =
     match n with
     | 0 -> a
-    | _ -> fib b (a + b) (n - 1)
-let fib_tail (n: nat) : nat = fib 1 1 n
+    | _ -> fib_aux b (a + b) (n - 1)
+let fib (n: nat) : nat = fib_aux 1 1 n
 ```
 
 Prove the following lemma:
 
 ```fs
-val fib_tail_is_ok (n: nat) : Lemma (fib_tail n == fibonacci n)
+val fib_fibonacci_equivalent (n: nat) : Lemma (fib_tail n == fibonacci n)
 ```
+
+See proof: [`fib_fibonacci_equivalent`](Proofs.md#fib_fibonacci_equivalent)
 
 ---
 

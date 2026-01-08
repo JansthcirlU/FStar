@@ -609,3 +609,103 @@ $$
 &           &                           &= \texttt{reverse l}                   && \text{Apply the } \texttt{append\_{}empty} \text{ lemma} \quad \square
 \end{align*}
 $$
+
+### `fib_aux_of_successive_fibonacci_yields_next_fibonacci`
+
+#### Function definitions
+
+```fs
+// Recursive Fibonacci sequence (1, 1, 2, 3, 5, ...)
+let rec fibonacci (n: nat) : nat =
+    if n < 2 then 1
+    else fibonacci (n - 1) + fibonacci (n - 2)
+
+// Tail-recursive Fibonacci helper
+let rec fib_aux (a b n: nat) : Tot nat (decreases n) =
+    match n with
+    | 0 -> a
+    | _ -> fib_aux b (a + b) (n - 1)
+```
+
+#### F\* lemma
+
+```fs
+let rec fib_aux_of_successive_fibonacci_yields_next_fibonacci (n: nat) (k: nat)
+    : Lemma (fib_aux (fibonacci k) (fibonacci (k + 1)) n == fibonacci (k + n)) =
+    if n = 0 then ()
+    else fib_aux_of_successive_fibonacci_yields_next_fibonacci (n - 1) (k + 1)
+```
+
+#### Proof: by induction
+
+##### Base case: `n = 0`
+
+- given: $\texttt{n} = 0$
+
+$$
+\begin{align*}
+&           &\texttt{fib\_{}aux (fibonacci k) (fibonacci (k + 1)) n}        &= \texttt{fib\_{}aux (fibonacci k) (fibonacci (k + 1)) 0}      && \text{Base case} \\
+&           &                                                               &= \texttt{fibonacci k}                                         && \text{By definition of } \texttt{fib} \\
+&           &                                                               &= \texttt{fibonacci (k + 0)}                                   && \text{Additive identity} \\
+&           &                                                               &= \texttt{fibonacci (k + n)}                                   && \text{Base case}
+\end{align*}
+$$
+
+##### Inductive case: `n > 0`
+
+- given: $\texttt{n} \gt 0$
+- assume: $\texttt{fib\_{}aux (fibonacci (k + 1)) (fibonacci (k + 2)) (n - 1)} = \texttt{fibonacci ((k + 1) + (n - 1))}$
+
+$$
+\begin{align*}
+&           &\texttt{fib\_{}aux (fibonacci k) (fibonacci (k + 1)) n}        &= \texttt{fib\_{}aux (fibonacci (k + 1)) (fibonacci k + fibonacci (k + 1)) (n - 1)}            && \text{By definition of } \texttt{fib\_{}aux} \\
+&           &                                                               &= \texttt{fib\_{}aux (fibonacci (k + 1)) (fibonacci (k + 1) + fibonacci k) (n - 1)}            && \text{By commutativity of } + \\
+&           &                                                               &= \texttt{fib\_{}aux (fibonacci (k + 1)) (fibonacci (n' - 1) + fibonacci (n' - 2)) (n - 1)}    && \text{By substituting } n' \text{ to match the definition of } \texttt{fibonacci n'} \\
+&           &                                                               &= \texttt{fib\_{}aux (fibonacci (k + 1)) (fibonacci (k + 2)) (n - 1)}                          && \text{By solving for } n' \\
+&           &                                                               &= \texttt{fibonacci ((k + 1) + (n - 1))}                                                       && \text{Apply the induction hypothesis} \\
+&           &                                                               &= \texttt{fibonacci (k + n)}                                                                   && \text{Simplify} \quad \square
+\end{align*}
+$$
+
+### `fib_fibonacci_equivalent`
+
+#### Function definitions
+
+```fs
+// Recursive Fibonacci sequence (1, 1, 2, 3, 5, ...)
+let rec fibonacci (n: nat) : nat =
+    if n < 2 then 1
+    else fibonacci (n - 1) + fibonacci (n - 2)
+
+// Tail-recursive Fibonacci helper
+let rec fib_aux (a b n: nat) : Tot nat (decreases n) =
+    match n with
+    | 0 -> a
+    | _ -> fib_aux b (a + b) (n - 1)
+
+// Fibonacci with tail recursion
+let fib (n: nat) : nat = fib_aux 1 1 n
+```
+
+#### F\* lemma
+
+```fs
+let rec fib_fibonacci_equivalent (n: nat) : Lemma (ensures fib n == fibonacci n) =
+    fib_aux_of_successive_fibonacci_yields_next_fibonacci n 0
+```
+
+See also:
+
+- [`fib_aux_of_successive_fibonacci_yields_next_fibonacci`](Proofs.md#fib_aux_of_successive_fibonacci_yields_next_fibonacci)
+
+#### Proof
+
+- given: $\texttt{fib\_{}aux (fibonacci 0) (fibonacci 1) n} = \texttt{fibonacci n}$
+
+$$
+\begin{align*}
+&                   &\texttt{fib n}                 &= \texttt{fib\_{}aux 1 1 n}                            && \text{By definition of } \texttt{fib} \\
+&                   &                               &= \texttt{fib\_{}aux (fibonacci 0) (fibonacci 1) n}    && \text{Since } \texttt{fibonacci 0} = \texttt{fibonacci 1} = 1 \\
+&                   &                               &= \texttt{fibonacci n}                                 && \text{Apply the } \texttt{fib\_{}aux\_{}of\_{}successive\_{}fibonacci\_{}yields\_{}next\_{}fibonacci} \text{ lemma} \quad \square
+\end{align*}
+$$
