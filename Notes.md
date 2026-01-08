@@ -1345,6 +1345,42 @@ val fib_fibonacci_equivalent (n: nat) : Lemma (fib_tail n == fibonacci n)
 
 See proof: [`fib_fibonacci_equivalent`](Proofs.md#fib_fibonacci_equivalent)
 
+### 8.5. Higher-order functions
+
+In F\*, functions are first-class citizens, so they can be passed into functions as arguments or even returned as function outputs.
+The following code shows how a function is used to transform the elements of a list.
+
+```fs
+let rec map (#a #b: Type) (f: a -> b) (l: list a) : list b =
+    match l with
+    | [] -> []
+    | hd :: tl -> f hd :: map f tl
+```
+
+#### 8.5.1. Exercise: Finding a list element
+
+The function `find` accepts a boolean function `f` and a list `l`, and it returns the first element in the list for which the function returns `true`.
+If none are found, the function returns `None`.
+
+```fs
+let rec find (#a: Type) (f: a -> bool) (l: list a) : option a =
+    match l with
+    | [] -> None
+    | hd :: tl -> if f hd then Some hd else find f tl
+```
+
+Prove that if `find` returns `Some x`, then `f x = true`.
+
+We can make the type signature stronger to *intrinsically* prove the fact:
+
+```fs
+val find (#a: Type) (f: a -> bool) (l: list a) : o: option a { Some? o ==> f (Some?.v o) }
+```
+
+Alternatively, we can prove it with a lemma.
+
+See proof: [`find_some_implies_true`](Proofs.md#find_some_implies_true)
+
 ---
 
 # Notes

@@ -709,3 +709,59 @@ $$
 &                   &                               &= \texttt{fibonacci n}                                 && \text{Apply the } \texttt{fib\_{}aux\_{}of\_{}successive\_{}fibonacci\_{}yields\_{}next\_{}fibonacci} \text{ lemma} \quad \square
 \end{align*}
 $$
+
+### `find_some_implies_true`
+
+#### Function definitions
+
+```fs
+let rec find (#a: Type) (f: a -> bool) (l: list a) : option a =
+    match l with
+    | [] -> None
+    | hd :: tl -> if f hd then Some hd else find f tl
+```
+
+#### F\* lemma
+
+```fs
+let test_element (#a: Type) (f: a -> bool) (o: option a) =
+    match o with
+    | Some x -> f x
+    | _ -> true
+
+let rec find_some_implies_true (#a: Type) (f: a -> bool) (l: list a) : Lemma (test_element f (find f l)) =
+    match l with
+    | [] -> ()
+    | _ :: tl -> find_some_implies_true f tl
+```
+
+#### Proof: by induction
+
+##### Base case: `l = []`
+
+- given: $\texttt{l} = \texttt{[]}$
+
+$$
+\begin{align*}
+&               &\texttt{test\_{}element f (find f l)}      &= \texttt{test\_{}element f (find f [])}       && \text{Base case} \\
+&               &                                           &= \texttt{test\_{}element f None}              && \text{By definition of } \texttt{find} \\
+&               &                                           &= \texttt{true}                                && \text{By definition of } \texttt{test\_{}element}
+\end{align*}
+$$
+
+##### Inductive case: `l = hd :: tl`
+
+- given: $\texttt{l} = \texttt{hd :: tl}$
+- assume: $\texttt{test\_{}element f (find f tl) = \texttt{true}}$
+
+$$
+\begin{align*}
+&               &\texttt{test\_{}element f (find f l)}              &= \texttt{test\_{}element f (find f (hd :: tl))}   && \text{Inductive case} \\ \\
+
+&               &\texttt{test\_{}element f (find (hd :: tl))}       &= \texttt{test\_{}element f (Some hd)}             && \text{By definition of } \texttt{find} \text{ when } \texttt{f hd} = \texttt{true} \tag{a} \\
+&               &                                                   &= \texttt{true}                                    && \text{By evaluating } \texttt{f hd} \\ \\
+
+&               &\texttt{test\_{}element f (find (hd :: tl))}       &= \texttt{test\_{}element f (find f tl)}           && \text{By definition of } \texttt{find} \text{ when } \texttt{f hd} = \texttt{false} \tag{b} \\
+&               &                                                   &= \texttt{true}                                    && \text{Apply the inductive hypothesis} \quad \square
+\end{align*}
+$$
